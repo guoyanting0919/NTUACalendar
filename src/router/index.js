@@ -15,33 +15,10 @@ const routes = [
   {
     path: "/Calendar", //開頭大寫
     name: "Calendar", //開頭大寫
-    component: () => import("../views/Calendar2.vue"),
+    component: () => import("../views/Calendar.vue"),
     meta: {
       title: "行事曆", //中文為主 若為英文開頭大寫
       requireAuth: false, //表示是否登入驗證 false 時可省略
-      NoNeedHome: false, // 表示不需要父層模板 false 時可省略
-    },
-  },
-
-  // 僅show活動
-  {
-    path: "/Calendar/:type", //開頭大寫
-    name: "CalendarAct", //開頭大寫
-    component: () => import("../views/Calendar2.vue"),
-    meta: {
-      title: "行事曆-活動", //中文為主 若為英文開頭大寫
-      requireAuth: false, //表示是否登入驗證 false 時可省略
-      NoNeedHome: false, // 表示不需要父層模板 false 時可省略
-    },
-  },
-
-  {
-    path: "/AdvancedSearch", //開頭大寫
-    name: "AdvancedSearch", //開頭大寫
-    component: () => import("../views/AdvancedSearch.vue"),
-    meta: {
-      title: "進階搜尋", //中文為主 若為英文開頭大寫
-      requireAuth: true, //表示是否登入驗證 false 時可省略
       NoNeedHome: false, // 表示不需要父層模板 false 時可省略
     },
   },

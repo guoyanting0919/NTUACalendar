@@ -1,11 +1,14 @@
 <template>
   <div id="Calendar">
+    <!-- Header -->
     <Header @getShowMenu="getShowMenu"></Header>
+
+    <!-- filter box -->
     <div class="filterBox" :class="{ showMenu: showMenu }">
       <template v-for="item in eventTypeData">
         <label :for="item.Id" :key="item.Id">
           <input class="typeCheckBox" :value="item.EventTypeName" v-model="typeCheckBox" type="checkbox" :id="item.Id" />
-          <span :class="{ activeSelect: checkIncludes(item.EventTypeName) }" class="checkedType">
+          <span :style="`background:${item.MainColor}`" :class="{ isNotActive: checkIncludes(item.EventTypeName) }" class="checkedType">
             {{ item.EventTypeName }}
             <i class="fas fa-times-circle cross"></i>
           </span>
@@ -15,12 +18,11 @@
         <i @click="searchHandler" slot="suffix" class="el-input__icon el-icon-search"></i>
       </el-input>
       <el-button @click="exportDialogVisible = true" type="primary" class="adSearch">匯出Excel</el-button>
-      <el-button @click="$router.push('/AdvancedSearch')" type="primary" class="adSearch" v-if="isLogin">進階搜尋</el-button>
     </div>
 
-    <!-- calendar -->
+    <!-- main Calendar -->
     <div id="fullCalendar">
-      <FullCalendar v-if="eventData" locale="zh-tw" class="wzCalendar" defaultView="dayGridMonth" :plugins="calendarPlugins" :weekends="true" :events="eventFilter" :eventLimit="true" height="parent" :eventTimeFormat="eventTimeFormat" :allDaySlot="false" @eventRender="this.eventRender" @datesRender="this.datesRender" ref="fullCalendar" :allDayDefault="false" :header="{
+      <FullCalendar locale="zh-tw" class="wzCalendar" defaultView="dayGridMonth" :plugins="calendarPlugins" :weekends="true" :events="eventFilter" :eventLimit="true" height="parent" :eventTimeFormat="eventTimeFormat" :allDaySlot="false" @eventRender="this.eventRender" @datesRender="this.datesRender" ref="fullCalendar" :allDayDefault="false" :header="{
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay',
@@ -52,15 +54,6 @@
         </div>
         <div style="flex-wrap: wrap" class="dialogBox">
           <p class="boxTitle">活動描述</p>
-          <!-- <p class="summaryBox">{{dialogEvent.Summary}}</p> -->
-          <!-- <div class="personalContainer mt-5 ck" ref="ck">
-            <ckeditor
-              :disabled="editorDisabled"
-              :editor="editor"
-              v-model="dialogEvent.Summary"
-              :config="editorConfig"
-            ></ckeditor>
-          </div>-->
           <vue-editor id="editor" v-model="dialogEvent.Summary"></vue-editor>
         </div>
         <div class="dialogBox">
@@ -92,7 +85,10 @@
           <p v-if="!isLogin" class="noInfo noJoinUser">登入後查看</p>
           <el-table v-else header-cell-class-name="tableHeader" empty-text="暫無資料" :data="dialogEvent.JoinUsers" style="margin-top: 1rem">
             <el-table-column property="userName" label="姓名"></el-table-column>
-            <el-table-column property="usertitle" label="職稱"></el-table-column>
+            <!-- <el-table-column
+              property="usertitle"
+              label="職稱"
+            ></el-table-column> -->
             <el-table-column property="unit" label="單位"></el-table-column>
             <el-table-column property="userType" label="參與角色"></el-table-column>
           </el-table>
@@ -119,37 +115,18 @@
 </template>
 
 <script>
-import Header from "../components/Header";
+import moment from "moment";
+import axios from "axios";
+
 import FullCalendar from "@fullcalendar/vue";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import moment from "moment";
-import { VueEditor } from "vue2-editor";
 import { Calendar } from "@fullcalendar/core";
 import twLocale from "@fullcalendar/core/locales/zh-tw";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import axios from "axios";
-// import ClassicEditor from "@ckeditor/ckeditor5-editor-classic/src/classiceditor";
-// import EssentialsPlugin from "@ckeditor/ckeditor5-essentials/src/essentials";
-// import BoldPlugin from "@ckeditor/ckeditor5-basic-styles/src/bold";
-// import ItalicPlugin from "@ckeditor/ckeditor5-basic-styles/src/italic";
-// import LinkPlugin from "@ckeditor/ckeditor5-link/src/link";
-// import ParagraphPlugin from "@ckeditor/ckeditor5-paragraph/src/paragraph";
-// import Alignment from "@ckeditor/ckeditor5-alignment/src/alignment";
-// import Heading from "@ckeditor/ckeditor5-heading/src/heading.js";
-// import FontBackgroundColor from "@ckeditor/ckeditor5-font/src/fontbackgroundcolor.js";
-// import FontColor from "@ckeditor/ckeditor5-font/src/fontcolor.js";
-// import FontFamily from "@ckeditor/ckeditor5-font/src/fontfamily.js";
-// import FontSize from "@ckeditor/ckeditor5-font/src/fontsize.js";
-// import MediaEmbed from "@ckeditor/ckeditor5-media-embed/src/mediaembed.js";
-// import List from "@ckeditor/ckeditor5-list/src/list.js";
-// import Image from "@ckeditor/ckeditor5-image/src/image.js";
-// import ImageCaption from "@ckeditor/ckeditor5-image/src/imagecaption.js";
-// import ImageResize from "@ckeditor/ckeditor5-image/src/imageresize.js";
-// import ImageStyle from "@ckeditor/ckeditor5-image/src/imagestyle.js";
-// import ImageToolbar from "@ckeditor/ckeditor5-image/src/imagetoolbar.js";
-// import ImageUpload from "@ckeditor/ckeditor5-image/src/imageupload.js";
-// import CKFinder from "@ckeditor/ckeditor5-ckfinder/src/ckfinder";
+import { VueEditor } from "vue2-editor";
+
+import Header from "../components/Header";
 export default {
   name: "Calendar",
   components: {
@@ -178,6 +155,13 @@ export default {
       endDate: "",
       showMenu: false,
 
+      /* list query */
+      listQuery: {
+        key: null,
+        startDate: "",
+        endDate: "",
+      },
+
       //calendar
       calendarPlugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       eventTimeFormat: {
@@ -197,73 +181,6 @@ export default {
       startG: "",
       endG: "",
       titleG: "",
-      //
-      // ck
-      //   editor: ClassicEditor,
-      //   editorConfig: {
-      //     plugins: [
-      //       EssentialsPlugin,
-      //       BoldPlugin,
-      //       ItalicPlugin,
-      //       LinkPlugin,
-      //       ParagraphPlugin,
-      //       Alignment,
-      //       Heading,
-      //       FontBackgroundColor,
-      //       FontColor,
-      //       FontFamily,
-      //       FontSize,
-      //       MediaEmbed,
-      //       List,
-      //       Image,
-      //       ImageResize,
-      //       ImageUpload,
-      //       ImageToolbar,
-      //       ImageCaption,
-      //       ImageStyle,
-      //       CKFinder,
-      //     ],
-
-      //     toolbar: {
-      //       items: [
-      //         "heading",
-      //         "|",
-      //         "bold",
-      //         "italic",
-      //         "|",
-      //         "fontBackgroundColor",
-      //         "fontColor",
-      //         "fontSize",
-      //         "|",
-      //         "link",
-      //         "imageUpload",
-      //         "mediaEmbed",
-      //         "|",
-      //         "alignment",
-      //         "numberedList",
-      //         "|",
-      //         "undo",
-      //         "redo",
-      //       ],
-      //     },
-      //     image: {
-      //       toolbar: [
-      //         "imageTextAlternative",
-      //         "|",
-      //         "imageStyle:full",
-      //         "imageStyle:side",
-      //       ],
-      //     },
-      //     ckfinder: {
-      //       uploadUrl: `https://scan.1966.org.tw/images/Upload/Pic`,
-      //       // 後端的上傳圖片 API 路徑
-      //       options: {
-      //         resourceType: "Images",
-      //         // 限定類型為圖片
-      //       },
-      //     },
-      //   },
-      //   editorDisabled: true,
     };
   },
   computed: {
@@ -272,12 +189,14 @@ export default {
     },
     eventFilter() {
       const vm = this;
-      return vm.eventData.filter((event) => {
-        return vm.typeCheckBox.includes(event.EventTypeName);
-      });
+      return vm.eventData;
+      // return vm.eventData.filter((event) => {
+      //   return vm.typeCheckBox.includes(event.EventTypeName);
+      // });
     },
   },
   methods: {
+    /* 匯出報表 */
     handleExport() {
       const vm = this;
       if (vm.exportType.length <= 0) {
@@ -322,7 +241,9 @@ export default {
           });
       }
     },
-    getEventData({ key, startDate, endDate }) {
+
+    /* 獲取事件列表 */
+    getList({ key, startDate, endDate }) {
       const vm = this;
       let params = {
         key,
@@ -330,56 +251,43 @@ export default {
         endDate,
       };
       vm.$api.GetEvents(params).then((res) => {
-        let arr = res.data.response.map((event) => {
-          event.title = event.EventName;
-          // let du = moment(event.EventEndDate).diff(
-          //   moment(event.EventStartDate),
-          //   "days"
-          // );
-          // let du =
-          //   moment(event.EventEndDate).format("YYYY-MM-DD") ===
-          //   moment(event.EventStartDate).format("YYYY-MM-DD");
-          let a = moment(event.EventEndDate).format("YYYY-MM-DD");
-          let b = moment(event.EventStartDate).format("YYYY-MM-DD");
+        console.log(res);
+        let arr = res.data.map((event) => {
+          event.title = event.title;
+          // event.backgroundColor = event.MainColor;
+
+          let a = moment(event.start).format("YYYY-MM-DD");
+          let b = moment(event.end).format("YYYY-MM-DD");
           let c;
           c = a === b ? true : false;
 
           event.className = c ? "isNotAllday" : "";
-          event.end = moment(event.EventEndDate).format("YYYY-MM-DDTHH:mm:ss");
-          event.start = moment(event.EventStartDate).format(
-            "YYYY-MM-DDTHH:mm:ss"
-          );
+          event.startDate = moment(event.start).format("YYYY-MM-DDTHH:mm:ss");
+          event.endDate = moment(event.end).format("YYYY-MM-DDTHH:mm:ss");
 
           // console.log(event.title, a, b, c);
           return event;
         });
         vm.eventData = arr;
+        console.log(vm.eventData, arr);
       });
     },
-    async getEventType() {
-      const vm = this;
-      await vm.$api.GetEventType().then((res) => {
-        vm.eventTypeData = res.data;
-        if (!vm.onlyActivity) {
-          vm.typeCheckBox = res.data.map((type) => {
-            return type.EventTypeName;
-          });
-        } else {
-          vm.typeCheckBox = ["活動"];
-        }
-      });
-    },
+
+    /* 搜尋 */
     searchHandler() {
       // console.log("search");
       const vm = this;
       let startDate = vm.startDate;
       let endDate = vm.endDate;
       let key = vm.searchInput;
-      vm.getEventData({ key, startDate, endDate });
+      vm.getList({ key, startDate, endDate });
     },
+
     checkIncludes(type) {
-      return this.typeCheckBox.includes(type);
+      return !this.typeCheckBox.includes(type);
     },
+
+    /* 添加至 google calendar */
     addToGoogleCalendar() {
       const vm = this;
       if (vm.isLogInG) {
@@ -417,8 +325,9 @@ export default {
         vm.authenticate();
       }
     },
+
+    /* 若尚未登入則跳出登入視窗 */
     authenticate() {
-      //若尚未登入則跳出登入視窗
       const vm = this;
       vm.$store.dispatch("loadingHandler", true);
       return gapi.auth2
@@ -437,6 +346,8 @@ export default {
           }
         );
     },
+
+    /* 確認添加 */
     postGoogleCalendar() {
       const vm = this;
       return gapi.client.calendar.events
@@ -455,6 +366,7 @@ export default {
               icon: "success",
               title: `已新增 ${vm.dialogEvent.EventName} 至Google行事曆`,
             });
+            vm.eventDailog = false;
           },
           function (err) {
             vm.$alertT.fire({
@@ -465,8 +377,9 @@ export default {
           }
         );
     },
+
+    /* 設定api key 並登入 */
     loadClient() {
-      // 設定api key 並登入
       const vm = this;
       gapi.client.setApiKey(process.env.VUE_APP_API_KEY);
       return gapi.client
@@ -489,27 +402,34 @@ export default {
           }
         );
     },
+
+    /* 檢查是否為登入狀態 */
     logInCheck() {
-      //檢查是否為登入狀態
       let check = gapi.hasOwnProperty("client");
       let check2 = gapi.client.hasOwnProperty("calendar");
       // console.log(check2);
       check2 ? (this.isLogInG = true) : (this.isLogInG = false);
     },
+
+    /* 替 full calendar 事件監聽 click */
     eventRender(info) {
       const vm = this;
       info.el.addEventListener("click", function () {
-        let Id = info.event.extendedProps.Id;
-        let params = { Id };
-        vm.$api.GetEventById(params).then((res) => {
-          vm.dialogEvent = res.data.response;
-          // console.log(vm.dialogEvent);
-          vm.$nextTick(() => {
-            vm.eventDailog = true;
+        console.log(info.event.id);
+        let Id = info?.event?.id;
+        let params = { insid: Id };
+        if (Id) {
+          vm.$api.GetEventById(params).then((res) => {
+            console.log(res);
+            vm.dialogEvent = res.data;
+            vm.$nextTick(() => {
+              vm.eventDailog = true;
+            });
           });
-        });
+        }
       });
     },
+
     datesRender(info) {
       const vm = this;
       // console.log(info);
@@ -519,19 +439,12 @@ export default {
       let key = vm.searchInput;
       vm.startDate = startDate;
       vm.endDate = endDate;
-      // console.log(vm.startDate, vm.endDate, vm.getEventData);
-      vm.getEventData({ key, startDate, endDate });
+      // console.log(vm.startDate, vm.endDate, vm.getList);
+      vm.getList({ key, startDate, endDate });
 
       // console.log(type, start, end);
     },
-    typeName(eid) {
-      const vm = this;
-      return vm.eventTypeData
-        .map((event) => {
-          return event.Id === eid ? event.EventTypeName : "";
-        })
-        .join("");
-    },
+
     dateFilter(date) {
       return moment(date).format("YYYY-MM-DD HH:mm");
     },
@@ -540,24 +453,16 @@ export default {
     },
   },
   async mounted() {
-    if (this.$route.params && this.$route.params.type) {
-      this.onlyActivity = true;
-    }
     this.baseUrl = process.env.VUE_APP_BASE_URL;
     this.$store.dispatch("loadingHandler", true);
     await gapi.load("client:auth2", function () {
       gapi.auth2.init({
         client_id: process.env.VUE_APP_CLIENT_ID,
       });
-      // console.log(gapi.client.hasOwnProperty("calendar"));
     });
     const vm = this;
-    this.getEventData("", "", "");
-    await this.getEventType();
-    // await this.logInCheck();
+    // this.getList("", "2020-08-01", "2020-08-30");
     this.$store.dispatch("loadingHandler", false);
-
-    // this.typeCheckBox = this.typeFilter;
   },
 };
 </script>

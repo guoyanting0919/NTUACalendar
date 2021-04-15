@@ -66,11 +66,10 @@
   }
 
   .checkedType {
-    background: #e5e5e5;
-    border: 1px solid #cccccc;
     border-radius: 4px;
     padding: 8px 12px;
-    color: #666666;
+    color: #ffffff;
+    transition: 0.5s;
     margin-right: 1rem;
     display: flex;
     justify-content: center;
@@ -82,30 +81,26 @@
       font-size: 14px;
     }
 
-    &.activeSelect {
-      background: $colorPrimary;
-      border: 1px solid $colorPrimary;
-      color: #ffffff;
+    &.isNotActive {
+      // background: $colorPrimary;
+      // border: 1px solid $colorPrimary;
+      color: #666;
       transition: 0.5s;
-
-      &:hover {
-        background: darken($color: $colorPrimary, $amount: 10);
-        .cross {
-          color: #fff;
-        }
-      }
+      background: #e5e5e5 !important;
+      border: 1px solid #cccccc;
 
       .cross {
-        display: block;
+        font-size: 14px;
+        margin-left: 0.5rem;
+        display: none;
+        color: rgba(255, 255, 255, 0.6);
+        transition: 0.5s;
       }
     }
 
     .cross {
-      font-size: 14px;
+      display: block;
       margin-left: 0.5rem;
-      display: none;
-      color: rgba(255, 255, 255, 0.6);
-      transition: 0.5s;
     }
   }
 
@@ -290,17 +285,27 @@
   }
 
   .isNotAllday {
-    background-color: transparent;
-    border: 1px solid #fff !important;
+    // background-color: inherit !important;
+    padding: 0;
+    border: 0px solid #fff !important;
+    // opacity: 0.5;
+
+    .fc-content {
+      background-color: #fff;
+    }
 
     &.fc-time-grid-event {
-      background-color: $colorSecondary !important;
-      border: 1px solid $colorSecondary !important;
+      // background-color: inherit !important;
+      border: 1px solid transparent !important;
 
       .fc-time {
         margin-left: 0rem;
         font-weight: 700;
         color: #fff;
+      }
+
+      .fc-content {
+        background-color: inherit;
       }
 
       .fc-title {
@@ -322,7 +327,7 @@
       left: 4px;
       width: 10px;
       height: 10px;
-      background: $colorSecondary;
+      background: inherit;
       border-radius: 50%;
       z-index: 999999;
     }
@@ -354,7 +359,7 @@
   }
 
   .fc-event {
-    border: 1px solid $colorSecondary;
+    border: 1px solid transparent;
   }
 
   .fc-content {
